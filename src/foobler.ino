@@ -84,8 +84,6 @@ void setup() {
 
 /*
  * Set the external LED colour
- *
- * TODO: Remove LED chip and replace with separate LEDs.
  */
 void setLed(char mode) {
   digitalWrite(PIN_LED_GREEN, (mode & LED_MODE_GREEN) == LED_MODE_GREEN ? LOW : HIGH);
@@ -109,13 +107,39 @@ void setMotor(int state) {
 #define STATE_ERROR      4
 #define STATE_WAIT       5
 #define STATE_BAD        6
-// TODO: Hold button to power off?
+#define STATE_ERROR_WAIT 7
 
 char state = STATE_OFF;
 
 void power_on_isr() {
   sleep_disable();
   state = STATE_START;
+}
+
+void switch_off() {
+  // Prepare for sleep
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  sleep_enable();
+
+  // add ISR for receiving the power switch event
+  attachInterrupt(0, power_on_isr, LOW); // TODO: check! - LOW is the only option here!
+
+  // Disable timer
+  power_timer0_disable();
+
+  // power off
+  sleep_mode();
+
+  // powered off
+
+  // wake-up happens here
+  sleep_disable();
+
+  // Remove power switch ISR
+  detachInterrupt(0);
+
+  // Re-enable timer
+  power_timer0_enable();
 }
 
 /*
@@ -125,91 +149,88 @@ void loop() {
   if (digitalRead(PIN_BAT_MONITOR) == LOW) {
     state = STATE_BAD;
   }
+
+  // TODO: Handle LED stuff - states: off, green-blinking, red-blinking, red
+
+  // TODO: Handle power switch - held for XXX seconds == STATE_OFF;
   
   switch (state) {
     case STATE_OFF: // Power down and wait for the power switch to be pressed
       setLed(LED_MODE_OFF);
+      setMotor(LOW);
+      // TODO: set LED mode: off
 
-      // Prepare for sleep
-      set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-      sleep_enable();
-
-      // add ISR for receiving the power switch event
-      attachInterrupt(0, power_on_isr, LOW); // TODO: check! - LOW is the only option here!
-
-      // Disable timer
-      power_timer0_disable();
-
-      // power off
-      sleep_mode();
-      
-      // powered off
-      
-      // wake-up happens here
-      sleep_disable();
-
-      // Remove power switch ISR
-      detachInterrupt(0);
-
-      // Re-enable timer
-      power_timer0_enable();
+      // Power down the chip and wait for it to be triggered back on by the power switch.
+      // The power switch ISR sets the state to STATE_START.
+      switch_off();
 
       break;
-    case STATE_START: // Blink green LED and choose where to go
-      // Green blinking light: Timer?
-      
-      if (digitalRead(PIN_SWITCH_INDEX) == HIGH) { // Another state?
-        state = STATE_INDEX_WAIT;
-      } else {
-        state = STATE_RUNNING;
-      }
-      
-      break;
-    case STATE_INDEX_WAIT: // Motor is running, wait until the index switch has been released
-      // Arm timer for index wait => STATE_ERROR
-      // Arm ISR for index switch => LOW => STATE_RUNNING
-
+    case STATE_START: // Blink green LED and start the motor
       setMotor(HIGH);
+      // TODO: set LED mode: green-blinking
 
-      // Sleep
+      state = STATE_RUNNING;
 
       break;
     case STATE_RUNNING: // Motor is running, wait until the index switch is pressed
-      // Arm timer for index wait => STATE_ERROR;
-      // Arm ISR for index switch => HIGH => STATE_WAIT;
+      // If too much time has passed
+      if (false) {
+        state = STATE_ERROR;
 
-      setMotor(HIGH);
-
-      // Sleep
+        break;
+      }
       
+      if (digitalRead(PIN_SWITCH_INDEX) == HIGH) {
+        state = STATE_INDEX_WAIT;
+      }
+
+      break;
+    case STATE_INDEX_WAIT: // Motor is running, wait until the index switch has been released
+      // If too much time has passed
+      if (false) {
+        state = STATE_ERROR;
+
+        break;
+      }
+      
+      if (digitalRead(PIN_SWITCH_INDEX) == HIGH) {
+        state = STATE_WAIT;
+      }
+
       break;
     case STATE_WAIT: // Wait until time is up
+      setMotor(LOW);
+
       readSpeed();
-      delay(setDelay); // Is this powered down enough?
-      
-      state = STATE_START;
+
+      // Wait for timeout
+      if (false) {
+        state = STATE_START;
+      }
       
       break;
     case STATE_ERROR: // Motor did not hit the index switch within time
-      // Kill green blinking LED
-      // Red blinking light: Timer?
- 
-      delay(65535);
- 
-      setLed(LED_MODE_OFF);
- 
-      state = STATE_OFF;     
-      
+      setMotor(LOW);
+      // Set LED mode to red blinking
+
+      state = STATE_ERROR_WAIT;
+
       break;
     case STATE_BAD: // Low battery => solid red for a while then off.
-      // Kill green blinking LED
+      setMotor(LOW);
+      // Set LED mode to red solid
+ 
+      state = STATE_ERROR_WAIT;
 
-      setLed(LED_MODE_RED);
-      delay(65535);
-      setLed(LED_MODE_OFF);
+      break;
+    case STATE_ERROR_WAIT:
+      // Wait for timeout
+      if (false) {
+        state = STATE_OFF;
+      }
       
-      state = STATE_OFF;
-
-      break;      
+      break;
   }
+
+  delay(1);
 }
