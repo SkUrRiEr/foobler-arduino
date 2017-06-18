@@ -1,4 +1,6 @@
 #include "Arduino.h"
+#include <avr/power.h>
+#include <avr/sleep.h>
 
 /*
  * Speed in seconds
@@ -111,6 +113,11 @@ void setMotor(int state) {
 
 char state = STATE_OFF;
 
+void power_on_isr() {
+  sleep_disable();
+  state = STATE_START;
+}
+
 /*
  * Main state machine
  */
@@ -121,17 +128,32 @@ void loop() {
   
   switch (state) {
     case STATE_OFF: // Power down and wait for the power switch to be pressed
-      // Kill green blinking LED
+      setLed(LED_MODE_OFF);
+
+      // Prepare for sleep
+      set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+      sleep_enable();
 
       // add ISR for receiving the power switch event
+      attachInterrupt(0, power_on_isr, LOW); // TODO: check! - LOW is the only option here!
+
+      // Disable timer
+      power_timer0_disable();
+
       // power off
+      sleep_mode();
       
       // powered off
       
       // wake-up happens here
-      
-      state = STATE_START;
-      
+      sleep_disable();
+
+      // Remove power switch ISR
+      detachInterrupt(0);
+
+      // Re-enable timer
+      power_timer0_enable();
+
       break;
     case STATE_START: // Blink green LED and choose where to go
       // Green blinking light: Timer?
