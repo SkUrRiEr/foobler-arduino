@@ -31,6 +31,14 @@ Therefore in my version of this, I've removed the LED chip and replaced it with 
 
 The timing switch is connected to the microcontroller using three IO lines. These go high to select 30, 60 and 90 minutes respectively. 15 minutes is selected when none of the others are high.
 
+## Compiling
+
+This is an Arduino sketch built with PlatformIO.
+
+You should be able to run the sketch through the Arduino IDE with no modifications, however it was written with PlatformIO as that has / integrates with better IDE features.
+
+Note that this uses standard AVR GCC / libc features to do the power saving bits in the "off" state, so the full set of AVR GCC headers are required.
+
 ## Physical description
 
 1. *Orange end caps:* The one at the "food" end contains a locking screw piece in newer models. The one at the "motor" end contains the entirety of the electronics including the batteries
