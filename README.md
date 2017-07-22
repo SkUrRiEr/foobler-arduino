@@ -42,8 +42,8 @@ Note that this uses standard AVR GCC / libc features to do the power saving bits
 ## Physical description
 
 1. *Orange end caps:* The one at the "food" end contains a locking screw piece in newer models. The one at the "motor" end contains the entirety of the electronics including the batteries
-2. *The blue body:* contains six food hoppers accessible from the "food" end. The openings for the end caps are keyed so they cannot be put in the wrong opening. This also contains the "gate".
-3. *The gate:* a large orange cylinder driven by the motor which contains a single hole through which food can flow from the hoppers out into the body and eventually out through the food holes. The motor end contains a large funnel to guide the motor shaft into the area between the hoppers. There is also a small nub on the motor end to operate the index switch. The position of the hole is such that when the gate is rotated _just_ beyond the index switch, the hole is centred over the opening in the hopper.
+2. *The blue body:* contains six food hoppers accessible from the "food" end. The openings for the end caps are keyed so they cannot be put in the wrong opening. This also contains the "gate". Food flows from the hoppers, through the hole in the gate, into a roughly torus shaped "inner" area between the gate and the outer surface of the ball. There are then 4 holes in the outside of the ball for food to flow through.
+3. *The gate:* a large orange cylinder driven by the motor which contains a single hole through which food can flow through. The motor end contains a large funnel to guide the motor shaft into the area between the hoppers. There is also a small nub on the motor end to operate the index switch. The position of the hole is such that when the gate is rotated _just_ beyond the index switch, the hole is centred over the opening in the hopper.
 4. *Motor end cap:* This consists of two main parts: the battery cover, which is on the outside of the ball, and the motor assembly. A captive screw holds these together. The battery cover has a hole in it to allow access to the power switch.
 5. *Motor assembly:* Two buttons, the recessed power button on the underside which is clear so the LEDs can shine through and the black index switch on the inside near the edge. There is also the white motor shaft in the centre and the timer selection switch near the index switch. Instructions are embossed around the timer switch.
 6. *Inside:* Almost all the electronics are on a single board, with only the motor and battery terminals external to that. The motor is a standard commutated DC motor which drives a set of gears which drive the external shaft and a wheel which operates the bell. The battery holders are moulded into the plastic.
@@ -52,7 +52,7 @@ Note that this uses standard AVR GCC / libc features to do the power saving bits
    * The motor controller, a couple of resistors and a transistor or MOSFET to drive the motor. The motor has a capacitor on-board and a small ceramic capacitor soldered directly to it's terminals. It's arranged so that the transistor or MOSFET grounds one side of the motor with the other connected to the battery.
    * The LED circuit, two "red" and "green" IO pins with resistors, the LED chip itself, who's "sense" pin is tied directly to the microcontroller with a positive pin tied directly to the battery.
    * Timing switch, a complicated switching arrangement which essentially connects three of the microcontroller's pins to the battery depending on the position of the switch. All three pins have pull-down resistors.
-   * Both switches simply connect one of the microcontroller's pins to the battery. The index switch has a pull-down resistor.
+   * Both external switches simply connect one of the microcontroller's pins to the battery. The index switch has a pull-down resistor.
    * The microcontroller has a decoupling capacitor.
 
 ## Stock Operation
@@ -80,6 +80,6 @@ Replacing the microcontroller with a different controller, e.g. an ESP8266 board
 
 ## Product review
 
-Our dog (a very food motivated Dalmatian) quite enjoys it, however our back yard isn't entirely flat, so he frequently "loses" it if it rolls off the concrete slab. We find that he quickly empties each of the hoppers, meaning that the stock times are too long for him and he quickly gets bored with it or loses it after unsuccessfully trying to retrieve more food from the currently open hopper.
+Our dog (a very food motivated Dalmatian) quite enjoys it, however our back yard isn't entirely flat, so he frequently "loses" it if it rolls off the concrete slab and into any of the hollows he has dug. We find that he quickly empties each of the hoppers, meaning that the stock times are too long for him and he quickly gets bored with it or loses it after unsuccessfully trying to retrieve more food from the currently open hopper after it has emptied.
 
-A friend, who this project is for, wants to use the toy as a short-time dinner dispenser and consequently wants the timing to be of the order of several tens of seconds instead of the tens of minutes it is stock.
+A friend, who this project is for, wants to use the toy to dispense her dog's dinner and consequently wants the timing to be of the order of several tens of seconds instead of the tens of minutes it is stock.
